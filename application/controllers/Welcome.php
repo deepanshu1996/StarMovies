@@ -136,8 +136,42 @@ class Welcome extends CI_Controller {
 		}
 	}
 
-	/*public function SearchMovies(){
-		$API_KEY = $this->uri->segment(3);
+	public function SearchMovies($session_id,$API_KEY){
+		$data['session_id'] = $session_id;
+		$data['API_KEY'] = $API_KEY;
+		$this->load->view('search_view',$data);
+	}
 
-	}*/
+	public function GetSearchResults($session_id,$API_KEY){
+		$data['session_id'] = $session_id;
+		$data['API_KEY'] = $API_KEY;
+		$query = $_GET['query'];
+
+        $data['query'] = $query;
+		$curl = curl_init();
+
+		curl_setopt_array($curl, array(
+		  CURLOPT_URL => "https://api.themoviedb.org/3/search/movie?api_key=".$API_KEY."&query=".$query."&page=1",
+		  CURLOPT_RETURNTRANSFER => true,
+		  CURLOPT_ENCODING => "",
+		  CURLOPT_MAXREDIRS => 10,
+		  CURLOPT_TIMEOUT => 30,
+		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		  CURLOPT_CUSTOMREQUEST => "GET",
+		  CURLOPT_POSTFIELDS => "{}",
+		));
+
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
+
+		curl_close($curl);
+
+		if ($err) {
+		  echo "cURL Error #:" . $err;
+		} else {
+		 	$response = json_decode($response,true);
+			$data['search_results'] = $response;
+		}
+		$this->load->view('search_results',$data);
+	}
 }
